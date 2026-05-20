@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import {
   ArrowLeft,
@@ -33,6 +33,18 @@ export default function WorkflowBuilder() {
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState(null)
+
+  // Pre-select agent if coming from AgentRunner
+  useEffect(() => {
+    if (location.state?.preSelectedAgent) {
+      const agent = location.state.preSelectedAgent
+      setSelectedAgents([agent])
+      setTitle(`${agent.name} Workflow`)
+      
+      // Clear location state to prevent re-adding on refresh
+      window.history.replaceState({}, document.title)
+    }
+  }, [location.state])
 
   // Agents already in the chain — prevent duplicates
   const selectedIds = new Set(selectedAgents.map((a) => a.id))
@@ -77,6 +89,7 @@ export default function WorkflowBuilder() {
           description: description.trim(),
           agents: selectedAgents.map((a) => a.id),
         },
+        initialInput: location.state?.preFilledOutput || '',
       },
     })
   }
